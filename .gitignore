@@ -1,0 +1,44 @@
+# Binarios compilados y ejecutables
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Archivos y directorios generados por Go
+/bin/
+/pkg/
+/vendor/
+/go.sum
+
+# Archivos y directorios locales específicos del desarrollo
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.local
+
+# Archivos específicos del sistema operativo
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Archivos de logs
+*.log
+
+# Directorios y archivos de caché
+/tmp/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+#Docker compose services
+postgres/
