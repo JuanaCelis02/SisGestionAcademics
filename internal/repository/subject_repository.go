@@ -35,11 +35,41 @@ func (r *SubjectRepository) GetByCode(code string) (*models.Subject, error) {
 
 func (r *SubjectRepository) GetAll() ([]models.Subject, error) {
 	var subjects []models.Subject
-	result := r.db.Find(&subjects)
+	var result *gorm.DB
+
+	page := 1
+	pageSize := 100
+
+	if page <= 1 && pageSize >= 1000 {
+		result = r.db.Find(&subjects)
+	} else {
+		offset := (page - 1) * pageSize
+		result = r.db.Offset(offset).Limit(pageSize).Find(&subjects)
+	}
+
 	if result.Error != nil {
 		return nil, result.Error
 	}
+
 	return subjects, nil
+}
+
+func (r *SubjectRepository) GetAllPaginated(page, pageSize int) ([]models.Subject, int64, error) {
+	var subjects []models.Subject
+	var total int64
+
+	if err := r.db.Model(&models.Subject{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * pageSize
+
+	result := r.db.Offset(offset).Limit(pageSize).Find(&subjects)
+	if err := result.Error; err != nil {
+		return nil, 0, err
+	}
+
+	return subjects, total, nil
 }
 
 func (r *SubjectRepository) GetByID(id uint) (*models.Subject, error) {
@@ -83,11 +113,23 @@ func (r *SubjectRepository) GetElectives() ([]models.Subject, error) {
 	return subjects, nil
 }
 
-func (r *SubjectRepository) GetByGroup(group int) ([]models.Subject, error) {
+func (r *SubjectRepository) GetSubjectsBySemester(semester int) ([]models.Subject, error) {
 	var subjects []models.Subject
-	result := r.db.Where("group = ?", group).Find(&subjects)
+	result := r.db.Where("semester = ?", semester).Find(&subjects)
 	if result.Error != nil {
 		return nil, result.Error
 	}
+
 	return subjects, nil
+}
+
+func (r *SubjectRepository) GetTotal() (int64, error) {
+	var total int64
+	err := r.db.Model(&models.Subject{}).Where("is_elective = ?", true).Count(&total).Error
+
+	if err != nil {
+		return 0, err
+	}
+
+	return total, nil
 }

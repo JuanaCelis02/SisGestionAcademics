@@ -28,5 +28,7 @@ func SetupSubjectRoutes(router *gin.RouterGroup, db *gorm.DB) {
 		subjectRouter.DELETE("/:id", subjectHandler.Delete)
 		
 		subjectRouter.GET("/electives", subjectHandler.GetElectives)
+		subjectRouter.GET("/electives/total", subjectHandler.GetTotal)
+		subjectRouter.GET("/semester/:id", subjectHandler.GetSubjectsBySemester)
 	}
 }

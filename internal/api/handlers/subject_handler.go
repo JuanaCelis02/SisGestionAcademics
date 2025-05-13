@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"math"
 	"net/http"
 	"strconv"
 	"uptc/sisgestion/internal/models"
@@ -36,13 +37,40 @@ func (h *SubjectHandler) Create(c *gin.Context) {
 }
 
 func (h *SubjectHandler) GetAll(c *gin.Context) {
-	subjects, err := h.subjectService.GetAll()
+	pageStr := c.DefaultQuery("page", "1")
+	pageSizeStr := c.DefaultQuery("page_size", "10")
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil || pageSize < 1 {
+		pageSize = 10
+	}
+
+	if pageSize > 100 {
+		pageSize = 100
+	}
+
+	subjects, total, err := h.subjectService.GetAllPaginated(page, pageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Failed to get subjects", err))
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.SuccessResponse("Subjects retrieved successfully", subjects))
+	totalPages := int(math.Ceil(float64(total) / float64(pageSize)))
+
+	response := gin.H{
+		"data":        subjects,
+		"total":       total,
+		"page":        page,
+		"page_size":   pageSize,
+		"total_pages": totalPages,
+	}
+
+	c.JSON(http.StatusOK, utils.SuccessResponse("Subjects retrieved successfully", response))
 }
 
 func (h *SubjectHandler) GetByID(c *gin.Context) {
@@ -60,7 +88,6 @@ func (h *SubjectHandler) GetByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, utils.SuccessResponse("Subject retrieved successfully", subject))
 }
-
 
 func (h *SubjectHandler) Update(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -107,4 +134,29 @@ func (h *SubjectHandler) GetElectives(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, utils.SuccessResponse("Elective subjects retrieved successfully", subjects))
+}
+
+func (h *SubjectHandler) GetSubjectsBySemester(c *gin.Context) {
+	semester, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("Invalid subject ID", err))
+		return
+	}
+	subjects, err := h.subjectService.GetSubjectsBySemester(int(semester))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Failed to get subjects by semester", err))
+	}
+
+	c.JSON(http.StatusOK, utils.SuccessResponse("Subjects by semester retrieved successfully", subjects))
+}
+
+func (h *SubjectHandler) GetTotal(c *gin.Context) {
+	total, err := h.subjectService.GetTotal()
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("Failed total subjects", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.SuccessResponse("Total subjects successfully", total))
 }

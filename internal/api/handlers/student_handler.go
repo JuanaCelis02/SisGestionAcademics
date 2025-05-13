@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"math"
 	"net/http"
 	"strconv"
 	"uptc/sisgestion/internal/models"
@@ -36,13 +37,40 @@ func (h *StudentHandler) Create(c *gin.Context) {
 }
 
 func (h *StudentHandler) GetAll(c *gin.Context) {
-	students, err := h.studentService.GetAll()
+	pageStr := c.DefaultQuery("page", "1")
+	pageSizeStr := c.DefaultQuery("page_size", "10")
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil || pageSize < 1 {
+		pageSize = 10
+	}
+
+	if pageSize > 100 {
+		pageSize = 100
+	}
+
+	students, total, err := h.studentService.GetAllPaginated(page, pageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Failed to get students", err))
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.SuccessResponse("Students retrieved successfully", students))
+	totalPages := int(math.Ceil(float64(total) / float64(pageSize)))
+
+	response := gin.H{
+		"data":        students,
+		"total":       total,
+		"page":        page,
+		"page_size":   pageSize,
+		"total_pages": totalPages,
+	}
+
+	c.JSON(http.StatusOK, utils.SuccessResponse("Students retrieved successfully", response))
 }
 
 func (h *StudentHandler) GetByID(c *gin.Context) {
@@ -120,4 +148,15 @@ func (h *StudentHandler) AddSubject(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, utils.SuccessResponse("Subject added to student successfully", nil))
+}
+
+func (h *StudentHandler) GetTotal(c *gin.Context) {
+	total, err := h.studentService.GetTotal()
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("Failed total studentts", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.SuccessResponse("Total students successfully", total))
 }

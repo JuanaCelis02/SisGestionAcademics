@@ -25,9 +25,9 @@ func SetupStudentRoutes(router *gin.RouterGroup, db *gorm.DB) {
 		studentRouter.POST("/", studentHandler.Create)
 		studentRouter.GET("/", studentHandler.GetAll)
 		studentRouter.GET("/:id", studentHandler.GetByID)
+		studentRouter.GET("/total", studentHandler.GetTotal)
 		studentRouter.PUT("/:id", studentHandler.Update)
-		studentRouter.DELETE("/:id", studentHandler.Delete)
-		
+		studentRouter.DELETE("/:id", studentHandler.Delete)		
 		studentRouter.POST("/:id/subjects", studentHandler.AddSubject)
 	}
 }

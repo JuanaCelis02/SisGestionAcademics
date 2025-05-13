@@ -30,6 +30,9 @@ func (h *CSVImportHandler) ImportSubjects(c *gin.Context) {
 		return
 	}
 
+	isElectiveStr := c.PostForm("is_elective")
+	isElective := isElectiveStr == "true" || isElectiveStr == "1"
+
 	src, err := file.Open()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Error opening file", err))
@@ -37,7 +40,7 @@ func (h *CSVImportHandler) ImportSubjects(c *gin.Context) {
 	}
 	defer src.Close()
 
-	subjects, err := h.csvService.ImportSubjectsFromCSV(src)
+	subjects, err := h.csvService.ImportSubjectsFromCSV(src, isElective)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, utils.ErrorResponse("Error processing CSV", err))
 		return

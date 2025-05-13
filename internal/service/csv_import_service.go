@@ -20,7 +20,7 @@ func NewCSVImportService(subjectRepo *repository.SubjectRepository) *CSVImportSe
 	}
 }
 
-func (s *CSVImportService) ImportSubjectsFromCSV(reader io.Reader) ([]models.Subject, error) {
+func (s *CSVImportService) ImportSubjectsFromCSV(reader io.Reader, isElective bool) ([]models.Subject, error) {
 	csvReader := csv.NewReader(reader)
 
 	csvReader.LazyQuotes = true
@@ -85,8 +85,8 @@ func (s *CSVImportService) ImportSubjectsFromCSV(reader io.Reader) ([]models.Sub
 			Code:       code,
 			Name:       name,
 			Credits:    credits,
-			Group:      semester,
-			IsElective: false,
+			Semester:      semester,
+			IsElective: isElective,
 		}
 
 		existing, _ := s.subjectRepo.GetByCode(code)

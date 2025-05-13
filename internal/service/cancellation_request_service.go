@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-
+	"uptc/sisgestion/internal/dto/response"
 	"uptc/sisgestion/internal/models"
 	"uptc/sisgestion/internal/repository"
 )
@@ -26,22 +26,14 @@ func NewCancellationRequestService(
 }
 
 func (s *CancellationRequestService) Create(request *models.CancellationRequest) error {
-	_, err := s.studentRepo.GetByID(request.StudentID)
-	if err != nil {
+	if _, err := s.studentRepo.GetByID(request.StudentID); err != nil {
 		return errors.New("student not found")
 	}
-
-	_, err = s.subjectRepo.GetByID(request.SubjectID)
-	if err != nil {
+	if _, err := s.subjectRepo.GetByID(request.SubjectID); err != nil {
 		return errors.New("subject not found")
 	}
 
-	if request.Justification == "" {
-		return errors.New("justification is required")
-	}
-
 	request.Status = "pending"
-
 	return s.requestRepo.Create(request)
 }
 
@@ -53,77 +45,37 @@ func (s *CancellationRequestService) GetByID(id uint) (*models.CancellationReque
 	return s.requestRepo.GetByID(id)
 }
 
-func (s *CancellationRequestService) GetByStudentID(studentID uint) ([]models.CancellationRequest, error) {
-	_, err := s.studentRepo.GetByID(studentID)
-	if err != nil {
-		return nil, errors.New("student not found")
-	}
-
-	return s.requestRepo.GetByStudentID(studentID)
+func (s *CancellationRequestService) UpdateStatus(id uint, status, comments string) error {
+	return s.requestRepo.UpdateStatus(id, status, comments)
 }
 
-func (s *CancellationRequestService) GetBySubjectID(subjectID uint) ([]models.CancellationRequest, error) {
-	_, err := s.subjectRepo.GetByID(subjectID)
-	if err != nil {
-		return nil, errors.New("subject not found")
-	}
-
-	return s.requestRepo.GetBySubjectID(subjectID)
-}
-
-func (s *CancellationRequestService) GetByStatus(status string) ([]models.CancellationRequest, error) {
+func (s *CancellationRequestService) UpdateStatusByParam(id uint, status string) error {
 	if status != "pending" && status != "approved" && status != "rejected" {
-		return nil, errors.New("invalid status, must be 'pending', 'approved' or 'rejected'")
+		return errors.New("invalid status value, must be 'pending', 'approved', or 'rejected'")
 	}
 
-	return s.requestRepo.GetByStatus(status)
-}
-
-func (s *CancellationRequestService) Update(request *models.CancellationRequest) error {
-	_, err := s.requestRepo.GetByID(request.ID)
-	if err != nil {
-		return err
-	}
-
-	_, err = s.studentRepo.GetByID(request.StudentID)
-	if err != nil {
-		return errors.New("student not found")
-	}
-
-	_, err = s.subjectRepo.GetByID(request.SubjectID)
-	if err != nil {
-		return errors.New("subject not found")
-	}
-
-	if request.Justification == "" {
-		return errors.New("justification is required")
-	}
-
-	return s.requestRepo.Update(request)
-}
-
-func (s *CancellationRequestService) UpdateStatus(id, resolvedBy uint, status, comments string) error {
-	request, err := s.requestRepo.GetByID(id)
-	if err != nil {
-		return err
-	}
-
-	if status != "approved" && status != "rejected" {
-		return errors.New("invalid status, must be 'approved' or 'rejected'")
-	}
-
-	if request.Status != "pending" {
-		return errors.New("cancellation request has already been resolved")
-	}
-
-	return s.requestRepo.UpdateStatus(id, status, resolvedBy, comments)
-}
-
-func (s *CancellationRequestService) Delete(id uint) error {
 	_, err := s.requestRepo.GetByID(id)
 	if err != nil {
-		return err
+		return errors.New("cancellation request not found")
 	}
 
-	return s.requestRepo.Delete(id)
+	return s.requestRepo.UpdateStatusByParam(id, status)
+}
+
+func (s *CancellationRequestService) GetCancellationsBySemester(semester int) ([]response.ReportSubjectCancellations, error) {
+
+	if semester < 1 || semester > 10 {
+		return nil, errors.New("invalid semester value, must be between 1 and 10")
+	}
+
+	return s.requestRepo.GetCancellationsBySemester(semester)
+}
+
+func (s *CancellationRequestService) GetCancellationsBySubjectAndGroup(subjectID uint) (*response.ReportSubjectCancellationsByGroup, error) {
+	_, err := s.subjectRepo.GetByID(subjectID)
+	if err != nil {
+			return nil, errors.New("subject not found")
+	}
+
+	return s.requestRepo.GetCancellationsBySubjectAndGroup(subjectID)
 }

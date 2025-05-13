@@ -6,6 +6,13 @@ import (
 	"uptc/sisgestion/internal/repository"
 )
 
+type StudentSubjectRelationship struct {
+	StudentID   uint            `json:"student_id"`
+	Student     *models.Student `json:"student,omitempty"`
+	SubjectID   uint            `json:"subject_id"`
+	Subject     *models.Subject `json:"subject,omitempty"`
+}
+
 type StudentService struct {
 	studentRepo *repository.StudentRepository
 	subjectRepo *repository.SubjectRepository
@@ -29,6 +36,10 @@ func (s *StudentService) Create(student *models.Student) error {
 
 func (s *StudentService) GetAll() ([]models.Student, error) {
 	return s.studentRepo.GetAll()
+}
+
+func (s *StudentService) GetAllPaginated(page, pageSize int) ([]models.Student, int64, error) {
+	return s.studentRepo.GetAllPaginated(page, pageSize)
 }
 
 func (s *StudentService) GetByID(id uint) (*models.Student, error) {
@@ -70,7 +81,10 @@ func (s *StudentService) AddSubject(studentID, subjectID uint) error {
 		return err
 	}
 
-	//TODO: implementar la nueva relación
 
 	return s.studentRepo.AddSubject(student.ID, subject.ID)
+}
+
+func (s *StudentService) GetTotal() (int64,error) {
+	return s.studentRepo.GetTotal()
 }

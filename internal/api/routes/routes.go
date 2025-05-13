@@ -21,4 +21,14 @@ func SetupRoutes(router *gin.Engine, db *gorm.DB) {
 	SetupSubjectRoutes(v1, db)
 
 	SetupCSVImportRoutes(v1, db)
+
+	SetupCancellationRequestRoutes(v1, db)
+	
+	SetupXMLImportRoutes(v1, db)
+
+	SetupStudentSubjectRoutes(v1, db)
+
+	SetupSubjectGroupStudentRoutes(v1, db)
+
+	SetupSemesterRoutes(v1, db)
 }

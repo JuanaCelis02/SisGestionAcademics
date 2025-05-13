@@ -21,20 +21,24 @@ func (s *SubjectService) Create(subject *models.Subject) error {
 	if existing != nil {
 		return errors.New("subject code already exists")
 	}
-	
+
 	if subject.Credits <= 0 {
 		return errors.New("credits must be greater than zero")
 	}
-	
-	if subject.Group <= 0 {
+
+	if subject.Semester <= 0 {
 		return errors.New("group must be greater than zero")
 	}
-	
+
 	return s.subjectRepo.Create(subject)
 }
 
 func (s *SubjectService) GetAll() ([]models.Subject, error) {
 	return s.subjectRepo.GetAll()
+}
+
+func (s *SubjectService) GetAllPaginated(page, pageSize int) ([]models.Subject, int64, error) {
+	return s.subjectRepo.GetAllPaginated(page, pageSize)
 }
 
 func (s *SubjectService) GetByID(id uint) (*models.Subject, error) {
@@ -50,22 +54,22 @@ func (s *SubjectService) Update(subject *models.Subject) error {
 	if err != nil {
 		return err
 	}
-	
+
 	if existing.Code != subject.Code {
 		otherSubject, _ := s.subjectRepo.GetByCode(subject.Code)
 		if otherSubject != nil {
 			return errors.New("subject code already exists")
 		}
 	}
-	
+
 	if subject.Credits <= 0 {
 		return errors.New("credits must be greater than zero")
 	}
-	
-	if subject.Group <= 0 {
+
+	if subject.Semester <= 0 {
 		return errors.New("group must be greater than zero")
 	}
-	
+
 	return s.subjectRepo.Update(subject)
 }
 
@@ -75,4 +79,12 @@ func (s *SubjectService) Delete(id uint) error {
 
 func (s *SubjectService) GetElectives() ([]models.Subject, error) {
 	return s.subjectRepo.GetElectives()
+}
+
+func (s *SubjectService) GetSubjectsBySemester(semester int) ([]models.Subject, error) {
+	return s.subjectRepo.GetSubjectsBySemester(semester)
+}
+
+func (s *SubjectService) GetTotal() (int64,error) {
+	return s.subjectRepo.GetTotal()
 }
