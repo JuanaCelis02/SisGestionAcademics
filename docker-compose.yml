@@ -1,4 +1,5 @@
 services:
+
   postgres-db:
     image: postgres:15.3
     restart: always
@@ -10,3 +11,28 @@ services:
       - ./postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    networks:
+      - app-network
+  
+  go-sisgestion:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - DATABASE_URL=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres-db:5432/$POSTGRES_DB?sslmode=disable
+    ports:
+      - "8080:8080"
+    command: ./main
+    depends_on:
+      - postgres-db
+    volumes:
+      - .:/app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
