@@ -11,11 +11,11 @@ type Subject struct {
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`
 	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
-	Code       string         `gorm:"uniqueIndex" json:"code" binding:"required"`
-	Name       string         `json:"name" binding:"required"`
+	Code       string         `gorm:"uniqueIndex" json:"code"`
+	Name       string         `json:"name"`
 	IsElective bool           `json:"is_elective" gorm:"default:false"`
-	Group      int            `json:"group" binding:"required"`
-	Credits    int            `json:"credits" binding:"required"`
+	Semester   int            `json:"semester"`
+	Credits    int            `json:"credits"`
 }
 
 func (Subject) TableName() string {

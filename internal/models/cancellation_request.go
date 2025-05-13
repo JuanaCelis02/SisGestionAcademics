@@ -18,8 +18,9 @@ type CancellationRequest struct {
 	Status        string         `json:"status" gorm:"default:pending"` // pending, approved, rejected
 	Justification string         `json:"justification"`
 	Comments      string         `json:"comments"`
+	Group         string         `json:"group"`
 }
 
 func (CancellationRequest) TableName() string {
-	return "cancellation_requests";
+	return "cancellation_requests"
 }

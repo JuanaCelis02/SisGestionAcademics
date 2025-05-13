@@ -6,15 +6,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type Student struct {
+type Semester struct {
 	ID        uint           `gorm:"primarykey" json:"id"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
-	Code      string         `gorm:"uniqueIndex" json:"code"`
-	Name      string         `json:"name"`
+	Year      string         `gorm:"uniqueIndex" json:"year"`
+	Period    string         `json:"period"`
 }
 
-func (Student) TableName() string {
-	return "students"
+func (Semester) TableName() string {
+	return "semester"
 }
